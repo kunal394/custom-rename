@@ -33,9 +33,8 @@ def main(delim):
             print("Exiting without any changes..")
             sys.exit(1)
     print("Renaming files...")
-    delim = '-'
     wd = os.getcwd() # get working directory
-    file_list = os.listdir('.') # get the list of files and directories in the cwd
+    file_list = os.listdir(wd) # get the list of files and directories in the cwd
     for i in file_list:
         if os.path.isfile(wd+'/'+i):
             try:
