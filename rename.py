@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import os, sys, signal, argparse, re
+delim = '-'
+prefix = False
+verbose = False
 
 def exit_gracefully(signum, frame):
     # restore the original signal handler as otherwise evil things will happen
@@ -19,14 +22,17 @@ def exit_gracefully(signum, frame):
     signal.signal(signal.SIGINT, exit_gracefully)
 
 
-def main(delim):
+def main():
+    global delim, prefix, verbose
     #flags to introduce: -r:for recursive renaming,
     #-v: for verbose renaming
     #-c: for confirmation before renaming
     #-s: for suggestion before renaming
     #-d: to provide a different delimiter
     #-reg: to provide a regex for renaming
-    print("delim being used: " + delim)
+
+    if verbose:
+        print("delim being used: " + delim)
     if len(sys.argv) < 2:
         res = raw_input("Are you sure you want to rename everything in current directory? y/n")
         if(not res.lower().startswith('y')):
@@ -38,7 +44,13 @@ def main(delim):
     for i in file_list:
         if os.path.isfile(wd+'/'+i):
             try:
-                os.rename(i, ''.join(i.split(delim)[1:]).strip())
+                if prefix:
+                    #keep everything before the first occurence of delim
+                    os.rename(i, i.split(delim)[0].strip())
+                else:
+                    #default behaviour
+                    #keep everything after the first occurence of delim
+                    os.rename(i, ''.join(i.split(delim)[1:]).strip())
             except:
                 print("Skipping file: " + i)
 
@@ -50,12 +62,14 @@ if __name__ == '__main__':
     #argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help = "increase output verbosity to level 1", action = "store_true")
+    parser.add_argument("-p", "--prefix", help = "keep prefix instead of suffix", action = "store_true")
     parser.add_argument("-d", "--delim", help = "set the delimiter for split filenames")
     args = parser.parse_args()
     verbose = bool(args.verbose)
+    prefix = bool(args.prefix)
     if args.delim:
         delim = str(args.delim)
     else:
         delim = '-'
     #print(args.echo)
-    main(delim)
+    main()
