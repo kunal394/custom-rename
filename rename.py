@@ -36,9 +36,14 @@ def main(delim):
     wd = os.getcwd() # get working directory
     file_list = os.listdir(wd) # get the list of files and directories in the cwd
     for i in file_list:
-        if os.path.isfile(wd+'/'+i):
+        if i.startswith('.'):
+            print("Skipping hidden file: " + i)
+        elif os.path.isfile(wd+'/'+i):
             try:
-                os.rename(i, ''.join(i.split(delim)[1:]).strip())
+                if preview:
+                    print(i + " -> " + ''.join(i.split(delim)[1:]).strip()) 
+                else:
+                    os.rename(i, ''.join(i.split(delim)[1:]).strip())
             except:
                 print("Skipping file: " + i)
 
@@ -51,8 +56,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help = "increase output verbosity to level 1", action = "store_true")
     parser.add_argument("-d", "--delim", help = "set the delimiter for split filenames")
+    parser.add_argument("-p", "--preview", help = "preview the effect without applying them", action = "store_true")
     args = parser.parse_args()
     verbose = bool(args.verbose)
+    preview = bool(args.preview)
     if args.delim:
         delim = str(args.delim)
     else:
