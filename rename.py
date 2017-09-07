@@ -2,8 +2,9 @@
 
 import os, sys, signal, argparse, re
 delim = '-'
-prefix = False
+suffix = False
 verbose = False
+preview = False
 
 def exit_gracefully(signum, frame):
     # restore the original signal handler as otherwise evil things will happen
@@ -23,8 +24,8 @@ def exit_gracefully(signum, frame):
 
 
 def main():
-    global delim, prefix, verbose
-    #flags to introduce: -r:for recursive renaming,
+    global delim, prefix, verbose, preview
+    #TODO: flags to introduce: -r:for recursive renaming,
     #-v: for verbose renaming
     #-c: for confirmation before renaming
     #-s: for suggestion before renaming
@@ -38,17 +39,22 @@ def main():
         if(not res.lower().startswith('y')):
             print("Exiting without any changes..")
             sys.exit(1)
-    print("Renaming files...")
+    if preview:
+        print("Preview:")
+    else:
+        print("Renaming files:")
     wd = os.getcwd() # get working directory
     file_list = os.listdir(wd) # get the list of files and directories in the cwd
     for i in file_list:
         if i.startswith('.'):
             print("Skipping hidden file: " + i)
-        elif os.path.isfile(wd+'/'+i):
+        elif os.path.isfile(wd + '/' + i):
             try:
-                if preview:
-                    print(i + " -> " + ''.join(i.split(delim)[1:]).strip()) 
-                elif prefix:
+                if preview and suffix:
+                    print(i + " ==> " + i.split(delim)[0].strip())
+                elif preview:
+                    print(i + " ==> " + ''.join(i.split(delim)[1:]).strip()) 
+                elif suffix:
                     #keep everything before the first occurence of delim
                     os.rename(i, i.split(delim)[0].strip())
                 else:
@@ -66,13 +72,13 @@ if __name__ == '__main__':
     #argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help = "increase output verbosity to level 1", action = "store_true")
-    parser.add_argument("-p", "--prefix", help = "keep prefix instead of suffix", action = "store_true")
+    parser.add_argument("-s", "--suffix", help = "remove suffix instead of prefix", action = "store_true")
     parser.add_argument("-d", "--delim", help = "set the delimiter for split filenames")
     parser.add_argument("-p", "--preview", help = "preview the effect without applying them", action = "store_true")
     args = parser.parse_args()
     verbose = bool(args.verbose)
     preview = bool(args.preview)
-    prefix = bool(args.prefix)
+    suffix = bool(args.suffix)
     if args.delim:
         delim = str(args.delim)
     else:
